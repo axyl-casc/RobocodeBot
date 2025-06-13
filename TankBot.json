@@ -1,0 +1,14 @@
+{
+  "name": "TankBot",
+  "version": "1.0",
+  "authors": [
+    "Axyl Carefoot-Schulz"
+  ],
+  "description": "A Simple Tank Bot",
+  "homepage": "",
+  "countryCodes": [
+    "ca"
+  ],
+  "platform": "JVM",
+  "programmingLang": "Java 11"
+}
