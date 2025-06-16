@@ -1,1 +1,1 @@
-java -cp ../lib/* TankBot.java
+java -cp "lib/*;src" TankBot
