@@ -12,6 +12,9 @@ import dev.robocode.tankroyale.botapi.events.*;
 // ------------------------------------------------------------------
 public class TankBot extends Bot {
 
+    /** Locator used to scan for enemies and handle firing */
+    private final TargetLocator locator = new TargetLocator(this);
+
     // The main method starts our bot
     public static void main(String[] args) {
         new TankBot().start();
@@ -25,19 +28,21 @@ public class TankBot extends Bot {
     // Called when a new round is started -> initialize and do some movement
     @Override
     public void run() {
-        // Repeat while the bot is running
+        // Move in a square pattern while searching for enemies
         while (isRunning()) {
-            forward(100);
-            turnGunLeft(360);
-            back(100);
-            turnGunLeft(360);
+            for (int i = 0; i < 4; i++) {
+                forward(150);
+                locator.findTarget();
+                turnRight(90);
+            }
         }
     }
 
     // We saw another bot -> fire!
     @Override
     public void onScannedBot(ScannedBotEvent e) {
-        fire(1);
+        locator.updateOnScan(e);
+        locator.fireTarget(1.5);
     }
 
     // We were hit by a bullet -> turn perpendicular to the bullet
