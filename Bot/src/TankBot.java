@@ -49,7 +49,7 @@ public class TankBot extends Bot {
     @Override
     public void onHitByBullet(HitByBulletEvent e) {
         // Calculate the bearing to the direction of the bullet
-        var bearing = calcBearing(e.getBullet().getDirection());
+        double bearing = calcBearing(e.getBullet().getDirection());
 
         // Turn 90 degrees to the bullet direction based on the bearing
         turnRight(90 - bearing);
