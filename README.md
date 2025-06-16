@@ -12,13 +12,6 @@ compile.bat
 This script compiles `TankBot.java` and `TargetLocator.java` using the
 libraries found in the `lib` folder one level above this project.
 
-## Running
-
-After compiling, run the bot using `TankBot.cmd`:
-
-```cmd
-TankBot.cmd
-```
 
 This command starts the bot with the compiled classes and included library.
 

@@ -9,4 +9,3 @@ if exist "%~dp0\.env" (
 if "%SERVER_URL%"=="" set SERVER_URL=ws://localhost:7654
 if "%SERVER_SECRET%"=="" set SERVER_SECRET=SUMu9ukWcUUteXLidcLHZOFZWg+R2u9VGUb7bVaA3K
 
-java -cp "lib/*;src" TankBot
