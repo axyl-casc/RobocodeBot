@@ -6,60 +6,61 @@ import dev.robocode.tankroyale.botapi.events.*;
  */
 public class TargetLocator {
 
-    /** Reference to the hosting bot */
-    private final Bot bot;
+    private boolean sweepRight = false; // Start with left
+    private boolean targetFound = false;
+    private int scansSinceLastSeen = 10;
 
-    /** Smoothed bearing to the last scanned target */
-    private double smoothedBearing = 0.0;
+    private double turn_delta = 0;
 
-    /** Exponential smoothing factor */
-    private static final double SMOOTHING = 0.3;
-
-    /** Direction of the next gun sweep, true is right */
-    private boolean sweepRight = true;
-
-    /**
-     * Creates a new TargetLocator for the specified bot.
-     *
-     * @param bot The bot using this locator
-     */
-    public TargetLocator(Bot bot) {
-        this.bot = bot;
+    public void moving(){
+        System.out.println("Moving forward.");
+        turn_delta += 2.5;
     }
 
-    /**
-     * Updates internal state based on a scanned bot event.
-     *
-     * @param e The scanned bot event
-     */
+    public void turning(double angle){
+        System.out.println("Turning by " + angle + " degrees.");
+        turn_delta += angle;
+    }
+
     public void updateOnScan(ScannedBotEvent e) {
-        double bearing = bot.calcBearing(e.getDirection());
-        smoothedBearing = SMOOTHING * bearing + (1 - SMOOTHING) * smoothedBearing;
-        sweepRight = bearing >= 0;
+
+        targetFound = true;
+        scansSinceLastSeen = 0;
+        turn_delta = 0;
+        
     }
 
-    /**
-     * Sweep the gun to search for a target. The gun sweeps either to the left
-     * or right depending on the last known target bearing.
-     */
-    public void findTarget() {
+    public boolean findTarget(Bot bot) {
+        targetFound = false; // Reset for next scan
+        // Perform gun movement based on current direction
+        double turn_angle = Math.max(0.1 * scansSinceLastSeen*scansSinceLastSeen, 1) + turn_delta;
+        System.out.println("Scanning for targets, scans since last seen: " + scansSinceLastSeen + ", turning " + (sweepRight ? "right" : "left") + " by " + turn_angle + " degrees.");
         if (sweepRight) {
-            bot.turnGunRight(20);
+            bot.turnGunRight(turn_angle);
         } else {
-            bot.turnGunLeft(20);
+            bot.turnGunRight(-turn_angle);
         }
+
+        // Update next sweep direction based on scan results and current movement
+        if (targetFound) {
+            System.out.println("Target spotted!");
+            // Maintain current direction if target was found
+            // (sweepRight remains unchanged)
+        } else {
+            scansSinceLastSeen++;
+            // If no target was found after several scans, reverse direction
+            if(scansSinceLastSeen == 1){
+                System.out.println("No target found, reversing direction.");
+                sweepRight = !sweepRight;
+                turn_delta += 5;
+            }
+        }
+        return targetFound;
     }
 
-    /**
-     * Predicts the next target location using the smoothed bearing and fires
-     * the gun with the specified bullet power.
-     *
-     * @param power Bullet power for the shot
-     */
-    public void fireTarget(double power) {
-        double absDirection = bot.getDirection() + smoothedBearing;
-        double gunBearing = bot.calcGunBearing(absDirection);
-        bot.turnGunRight(gunBearing);
-        bot.fire(power);
+    public int getCertainty() {
+
+        return Math.max(0, 10 - scansSinceLastSeen);
     }
+
 }
