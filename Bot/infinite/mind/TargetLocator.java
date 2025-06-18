@@ -53,7 +53,6 @@ public class TargetLocator {
      */
     public void moving(){
         System.out.println("Moving forward.");
-        turn_delta += 2.5; // adjust so it scans a larger area after the move is complete
     }
 
     /**
@@ -90,15 +89,13 @@ public class TargetLocator {
         currentGunDirection = bot.getGunDirection();
         targetFound = false; // Reset for next scan
         // Perform gun movement based on current direction
-        double turn_angle = Math.max((0.1 * (double) (scansSinceLastSeen * scansSinceLastSeen)), 1) + turn_delta;
-        if(scansSinceLastSeen < 3){
-            turn_angle = Math.min(turn_angle,1);
-        }
+        double turn_angle = Math.max((0.01 * (double) (scansSinceLastSeen * scansSinceLastSeen)), 1) + turn_delta;
+        turn_angle = turn_angle % 360;
         System.out.println("Scanning for targets, scans since last seen: " + scansSinceLastSeen + ", turning " + (sweepRight ? "right" : "left") + " by " + turn_angle + " degrees.");
         if (sweepRight) {
             bot.turnGunRight(turn_angle);
         } else {
-            bot.turnGunRight(-turn_angle);
+            bot.turnGunLeft(turn_angle);
         }
 
         // Update next sweep direction based on scan results and current movement
@@ -115,7 +112,7 @@ public class TargetLocator {
             if(scansSinceLastSeen == 1){
                 System.out.println("No target found, reversing direction.");
                 sweepRight = !sweepRight;
-                turn_delta += 10;
+                turn_delta += 5;
             }
         }
         currentGunDirection = bot.getGunDirection();
@@ -130,7 +127,7 @@ public class TargetLocator {
      */
     public int getCertainty(double direction) {
         if(scansSinceLastSeen < 5){
-            return (int) (((100 - Math.round(Math.abs(currentGunDirection - opponentEstimatedAngle))) / 100.0) * 10);
+            return (int) ((90 - Math.abs(currentGunDirection - opponentEstimatedAngle))/90) * 10;
         }
         return 0;
     }

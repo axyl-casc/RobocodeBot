@@ -164,20 +164,14 @@ private void moveDown(double distance){ // 270°
      */
     @Override
     public void onScannedBot(ScannedBotEvent e) {
+        System.out.println("Certainty: " + locator.getCertainty(getDirection()));
         locator.updateOnScan(e);
         opponentDistance = distanceTo(e.getX(), e.getY());
-        double certainty = locator.getCertainty(getGunDirection());
         if(opponentDistance < 10 && getGunHeat() == 0){
             fire(3);
         }else{
-            System.out.println("Certainty: " + certainty);
-            if(certainty > 5 && getGunHeat() == 0) {
-                if(opponentDistance < 100){
-                    fire(Math.min(Math.round(certainty / 10.0) * 4, 3));
-                }else{
-                    fire(1);
-                }
-                
+            if(locator.getCertainty(getDirection()) > 3 && getGunHeat() == 0){
+                fire(Math.min(Math.round(locator.getCertainty(getDirection()) / 10.0) * 4, 3));
             }
         }
 
@@ -200,7 +194,7 @@ private void moveDown(double distance){ // 270°
         // let the locator know we are moving
         locator.turning(bearing + 91);
         locator.moving();
-        forward(50);
+        forward(10);
     }
 
     /**
