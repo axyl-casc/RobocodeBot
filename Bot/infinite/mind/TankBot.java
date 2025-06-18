@@ -34,9 +34,9 @@ import java.util.Random;
 public class TankBot extends Bot {
 
     /**
-     * Locator used to scan for enemies and handle firing logic.
+     * Random generator for unpredictable movement.
      */
-    private final TargetLocator locator = new TargetLocator();
+    private final Random random = new Random();
 
     /**
      * Distance to the last scanned opponent. Used to decide fire power.
@@ -80,26 +80,30 @@ public void run() {
     setBulletColor(Color.orange);
     setScanColor(Color.pink);
 
-    while (isRunning()) {
+    // Allow gun and radar to turn independently of the body
+    setAdjustGunForBodyTurn(true);
+    setAdjustRadarForGunTurn(true);
 
-        System.out.println("Distance to center: " + getDistance(getX(), getY(), centerX, centerY));
-        System.out.println("Target distance for middle:" + Math.min(arenaWidth, arenaHeight) / 2.0);
-        if(getDistance(getX(), getY(), centerX, centerY) > Math.min(arenaWidth, arenaHeight) / 2.0){
-            locator.findTarget(this);
-            if(getX() > centerX){
-                moveLeft(getX() - centerX);
-            }else{
-                moveRight(centerX - getX());
-            }
-            if(getY() > centerY){
-                moveDown(getY() - centerY);
-            }else{
-                moveUp(centerY - getY());
-            }
+    // Move to the center of the arena
+    while (isRunning() && getDistance(getX(), getY(), centerX, centerY) > 1) {
+        if (getX() > centerX) {
+            moveLeft(getX() - centerX);
+        } else {
+            moveRight(centerX - getX());
         }
+        if (getY() > centerY) {
+            moveDown(getY() - centerY);
+        } else {
+            moveUp(centerY - getY());
+        }
+        turnGunRight(20);
+    }
 
+    // Main loop
+    while (isRunning()) {
+        randomMovement();
+        turnGunRight(20);
         printDebugInfo();
-        locator.findTarget(this);
     }
 }
 
@@ -111,9 +115,7 @@ private void moveUp(double distance){ // 90°
     double direction = getDirection();
     if(direction > 90){
         turnRight(direction - 90);
-        locator.turning(direction - 90);
     }else{
-        locator.turning(-(direction - 90));
         turnLeft(90 - direction);
     }
     forward(distance);
@@ -124,10 +126,8 @@ private void moveLeft(double distance){ // 180°
 
     if(direction < 180){
         turnRight(direction - 180);
-        locator.turning(direction - 180);
     }else{
         turnLeft(180 - direction);
-        locator.turning(-(180 - direction));
     }
 
     forward(distance);
@@ -137,11 +137,9 @@ private void moveDown(double distance){ // 270°
     double direction = getDirection();
 
     if(direction < 270){
-        turnRight(direction - 270); 
-        locator.turning(direction - 270);
+        turnRight(direction - 270);
     }else{
         turnLeft(270 - direction);
-        locator.turning(-(270 - direction));
     }
 
     forward(distance);
@@ -151,9 +149,31 @@ private void moveDown(double distance){ // 270°
         double direction = getDirection();
         // if we want to move right, we want the angle to be set at 0
         turnRight(direction);
-        locator.turning(direction);
 
         forward(distance);
+    }
+
+    /**
+     * Performs a random movement in one of the four cardinal directions.
+     */
+    private void randomMovement(){
+        double distance = 20 + random.nextDouble() * 60;
+        switch(random.nextInt(4)){
+            case 0: moveUp(distance); break;
+            case 1: moveRight(distance); break;
+            case 2: moveDown(distance); break;
+            default: moveLeft(distance); break;
+        }
+    }
+
+    /**
+     * Normalizes an angle to the range [-180, 180).
+     */
+    private double normalizeAngle(double angle){
+        double a = angle % 360;
+        if(a >= 180) a -= 360;
+        if(a < -180) a += 360;
+        return a;
     }
 
     /**
@@ -164,15 +184,20 @@ private void moveDown(double distance){ // 270°
      */
     @Override
     public void onScannedBot(ScannedBotEvent e) {
-        System.out.println("Certainty: " + locator.getCertainty(getDirection()));
-        locator.updateOnScan(e);
         opponentDistance = distanceTo(e.getX(), e.getY());
-        if(opponentDistance < 10 && getGunHeat() == 0){
-            fire(3);
-        }else{
-            if(locator.getCertainty(getDirection()) > 3 && getGunHeat() == 0){
-                fire(Math.min(Math.round(locator.getCertainty(getDirection()) / 10.0) * 4, 3));
-            }
+
+        double dx = e.getX() - getX();
+        double dy = e.getY() - getY();
+        double absDir = Math.toDegrees(Math.atan2(dy, dx));
+        if (absDir < 0) {
+            absDir += 360;
+        }
+        double gunTurn = normalizeAngle(absDir - getGunDirection());
+        turnGunRight(gunTurn);
+
+        if (getGunHeat() == 0) {
+            double power = Math.min(3, Math.max(1, 400 / opponentDistance));
+            fire(power);
         }
 
     }
@@ -191,9 +216,6 @@ private void moveDown(double distance){ // 270°
         // Turn 90 degrees to the bullet direction based on the bearing
         turnRight(bearing + 91);
 
-        // let the locator know we are moving
-        locator.turning(bearing + 91);
-        locator.moving();
         forward(10);
     }
 
