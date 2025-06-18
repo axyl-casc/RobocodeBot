@@ -10,4 +10,3 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo Compilation completed.
-pause

@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compile-bot",
+      "type": "shell",
+      "command": "${workspaceFolder}/Bot/compile.bat",
+      "options": {
+        "cwd": "${workspaceFolder}/Bot"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
