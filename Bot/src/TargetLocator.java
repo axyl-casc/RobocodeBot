@@ -2,34 +2,79 @@ import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
 
 /**
+ * <p>Robocode API functions used in this file:</p>
+ * <ul>
+ *   <li>{@link Bot#turnGunRight(double)} &ndash; turns the bot's gun.</li>
+ *   <li>{@link Bot#turnRight(double)} &ndash; used indirectly for body turning.</li>
+ *   <li>{@link ScannedBotEvent} &ndash; event triggered when another bot is seen.</li>
+ * </ul>
+ */
+
+/**
  * Utility class used for scanning and firing at opponents.
  */
 public class TargetLocator {
 
+    /**
+     * Indicates if the next sweep should rotate the gun to the right.
+     */
     private boolean sweepRight = false; // Start with left
+    /**
+     * Set to {@code true} when a target has been seen during the last scan.
+     */
     private boolean targetFound = false;
+    /**
+     * Number of scans since the target was last observed.
+     */
     private int scansSinceLastSeen = 10;
 
+    /**
+     * Accumulated turning amount from the bot's own movement.
+     */
     private double turn_delta = 0;
 
+    /**
+     * Called when the bot moves forward. Increases the gun turn adjustment
+     * to compensate for our own movement.
+     *
+     * @return void
+     */
     public void moving(){
         System.out.println("Moving forward.");
         turn_delta += 2.5;
     }
 
+    /**
+     * Notifies the locator that the bot is turning.
+     *
+     * @param angle double angle: amount the bot has turned
+     * @return void
+     */
     public void turning(double angle){
         System.out.println("Turning by " + angle + " degrees.");
         turn_delta += angle;
     }
 
+    /**
+     * Updates internal state when a target is scanned.
+     *
+     * @param e ScannedBotEvent e: the scan event with target information
+     * @return void
+     */
     public void updateOnScan(ScannedBotEvent e) {
 
         targetFound = true;
         scansSinceLastSeen = 0;
         turn_delta = 0;
-        
+
     }
 
+    /**
+     * Performs a scan for enemy tanks and adjusts the gun position.
+     *
+     * @param bot Bot bot: reference used to issue turning commands
+     * @return boolean indicating if a target was found
+     */
     public boolean findTarget(Bot bot) {
         targetFound = false; // Reset for next scan
         // Perform gun movement based on current direction
@@ -58,6 +103,12 @@ public class TargetLocator {
         return targetFound;
     }
 
+    /**
+     * Provides a simple certainty metric based on how long ago a target was
+     * spotted.
+     *
+     * @return int value from 0 to 10 representing certainty
+     */
     public int getCertainty() {
 
         return Math.max(0, 10 - scansSinceLastSeen);
