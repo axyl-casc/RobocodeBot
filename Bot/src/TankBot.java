@@ -47,7 +47,20 @@ public class TankBot extends Bot {
         while (isRunning()) {
             printDebugInfo();
             locator.findTarget(this);
+
         }
+    }
+
+    /**
+     * Helper method to move the bot to an absolute coordinate.
+     *
+     * @param x target x coordinate
+     * @param y target y coordinate
+     */
+    private void goTo(double x, double y) {
+        double bearing = bearingTo(x, y);
+        turnRight(bearing);
+        forward(distanceTo(x, y));
     }
 
     // We saw another bot -> fire!
