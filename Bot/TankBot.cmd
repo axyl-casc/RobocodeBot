@@ -1,5 +1,5 @@
 @echo off
-rem Launch TankBot using robocode tank royale API
+cd /d "%~dp0"
 
 rem Load environment variables from .env if it exists
 if exist "%~dp0\.env" (
@@ -9,4 +9,4 @@ if exist "%~dp0\.env" (
 if "%SERVER_URL%"=="" set SERVER_URL=ws://localhost:7654
 if "%SERVER_SECRET%"=="" set SERVER_SECRET=pfEtPirHr3RN7Ij6WAMZDhN0TGnjyjePbeIphFAI0A
 
-java -cp "lib/*;src" TankBot
+java -cp "lib/*;." infinite.mind.TankBot

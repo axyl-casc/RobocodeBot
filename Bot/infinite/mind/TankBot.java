@@ -1,7 +1,10 @@
+package infinite.mind;
+
 import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
 import java.awt.Color;
 import java.util.Random;
+
 
 /**
  * <p>Robocode API functions used in this file:</p>
@@ -24,16 +27,7 @@ import java.util.Random;
  * </ul>
  */
 
-// ------------------------------------------------------------------
-// TankBot
-// ------------------------------------------------------------------
-// A sample bot originally made for Robocode by Mathew Nelson.
-// Ported to Robocode Tank Royale by Flemming N. Larsen.
-//
-// Probably the first bot you will learn about.
-// Moves in a seesaw motion, and spins the gun around at each end.
-// ------------------------------------------------------------------
-
+ 
 /**
  * Basic tank bot demonstrating simple movement and firing logic.
  */
@@ -53,7 +47,6 @@ public class TankBot extends Bot {
      * Entry point for the program. Creates and starts the bot.
      *
      * @param args String[] args: command line arguments (unused)
-     * @return void
      */
     public static void main(String[] args) {
         new TankBot().start();
@@ -62,7 +55,6 @@ public class TankBot extends Bot {
     /**
      * Constructs a new {@code TankBot} and loads its configuration.
      *
-     * @return void
      */
     TankBot() {
         super(BotInfo.fromFile("TankBot.json"));
@@ -72,40 +64,96 @@ public class TankBot extends Bot {
      * Called by the game engine when a new round starts. Initializes colors,
      * prints debug info and continuously scans for enemies.
      *
-     * @return void
      */
-    @Override
-    public void run() {
-        // Move in a square pattern while searching for enemies
-        double tankXPosition = getX();
-        double tankYPosition = getY();
-        System.out.println("TankBot started at position: (" + tankXPosition + ", " + tankYPosition + ")");
 
-        // https://docs.oracle.com/javase/8/docs/api/java/awt/Color.html
-        setBodyColor(Color.cyan);
-        setTurretColor(Color.darkGray);
-        setRadarColor(Color.green);
-        setBulletColor(Color.orange);
-        setScanColor(Color.pink);
+@Override
+public void run() {
+    double arenaWidth = getArenaWidth();
+    double arenaHeight = getArenaHeight();
+    double centerX = arenaWidth / 2.0;
+    double centerY = arenaHeight / 2.0;
 
-        while (isRunning()) {
-            printDebugInfo();
+    // Set colors
+    setBodyColor(Color.cyan);
+    setTurretColor(Color.darkGray);
+    setRadarColor(Color.green);
+    setBulletColor(Color.orange);
+    setScanColor(Color.pink);
+
+    while (isRunning()) {
+
+        System.out.println("Distance to center: " + getDistance(getX(), getY(), centerX, centerY));
+        System.out.println("Target distance for middle:" + Math.min(arenaWidth, arenaHeight) / 2.0);
+        if(getDistance(getX(), getY(), centerX, centerY) > Math.min(arenaWidth, arenaHeight) / 2.0){
             locator.findTarget(this);
-
+            if(getX() > centerX){
+                moveLeft(getX() - centerX);
+            }else{
+                moveRight(centerX - getX());
+            }
+            if(getY() > centerY){
+                moveDown(getY() - centerY);
+            }else{
+                moveUp(centerY - getY());
+            }
         }
+
+        printDebugInfo();
+        locator.findTarget(this);
+    }
+}
+
+private double getDistance(double p1x, double p2x, double p1y, double p2y) {
+    return Math.sqrt((p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y));
+}
+
+private void moveUp(double distance){ // 90°
+    double direction = getDirection();
+    if(direction > 90){
+        turnRight(direction - 90);
+        locator.turning(direction - 90);
+    }else{
+        locator.turning(-(direction - 90));
+        turnLeft(90 - direction);
+    }
+    forward(distance);
+}
+
+private void moveLeft(double distance){ // 180°
+    double direction = getDirection();
+
+    if(direction < 180){
+        turnRight(direction - 180);
+        locator.turning(direction - 180);
+    }else{
+        turnLeft(180 - direction);
+        locator.turning(-(180 - direction));
     }
 
-    /**
-     * Helper method to move the bot to an absolute coordinate.
-     *
-     * @param x double x: target x coordinate
-     * @param y double y: target y coordinate
-     * @return void
-     */
-    private void goTo(double x, double y) {
-        double bearing = bearingTo(x, y);
-        turnRight(bearing);
-        forward(distanceTo(x, y));
+    forward(distance);
+}
+
+private void moveDown(double distance){ // 270°
+    double direction = getDirection();
+
+    if(direction < 270){
+        turnRight(direction - 270); 
+        locator.turning(direction - 270);
+    }else{
+        turnLeft(270 - direction);
+        locator.turning(-(270 - direction));
+    }
+
+    forward(distance);
+}
+
+    private void moveRight(double distance){
+        double direction = getDirection();
+        // if we want to move right, we want the angle to be set at 0
+        turnRight(direction);
+        locator.turning(direction);
+
+        forward(distance);
     }
 
     /**
@@ -113,17 +161,23 @@ public class TankBot extends Bot {
      * information and handles shooting decisions.
      *
      * @param e ScannedBotEvent e: event describing the scanned bot
-     * @return void
      */
     @Override
     public void onScannedBot(ScannedBotEvent e) {
         locator.updateOnScan(e);
         opponentDistance = distanceTo(e.getX(), e.getY());
+        double certainty = locator.getCertainty(getGunDirection());
         if(opponentDistance < 10 && getGunHeat() == 0){
             fire(3);
         }else{
-            if(locator.getCertainty() > 5 && getGunHeat() <= 1){
-                fire(Math.min(Math.round(locator.getCertainty() / 10.0) * 4, 3));
+            System.out.println("Certainty: " + certainty);
+            if(certainty > 5 && getGunHeat() == 0) {
+                if(opponentDistance < 100){
+                    fire(Math.min(Math.round(certainty / 10.0) * 4, 3));
+                }else{
+                    fire(1);
+                }
+                
             }
         }
 
@@ -134,7 +188,6 @@ public class TankBot extends Bot {
      * incoming bullet and moves away.
      *
      * @param e HitByBulletEvent e: details about the bullet that hit us
-     * @return void
      */
     @Override
     public void onHitByBullet(HitByBulletEvent e) {
@@ -153,12 +206,15 @@ public class TankBot extends Bot {
     /**
      * Outputs the bot's current position and energy to the console.
      *
-     * @return void
      */
     private void printDebugInfo(){
             System.out.println("Debug Info:");
             System.out.println("  X: " + getX() + ", Y: " + getY());
             System.out.println("  Energy: " + getEnergy());
+            System.out.println("  Opponent Distance: " + opponentDistance);
+            System.out.println("  Gun Heat: " + getGunHeat());
+            System.out.println("  Facing Direction: " + getDirection());
     }
+
 
 }
