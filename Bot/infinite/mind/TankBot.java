@@ -35,6 +35,22 @@ public class TankBot extends Bot {
      */
     private double opponentDistance = 0;
 
+    // --- Simple Q-learning state -----------------------------------------
+    private java.util.Map<String, double[]> qTable = new java.util.HashMap<>();
+    private String lastState = null;
+    private int lastAction = -1;
+    private double reward = 0;
+
+    private static final int ACTION_FIRE = 0;
+    private static final int ACTION_AHEAD = 1;
+    private static final int ACTION_LEFT = 2;
+    private static final int ACTION_RIGHT = 3;
+    private static final int NUM_ACTIONS = 4;
+
+    private final double alpha = 0.1;  // learning rate
+    private final double gamma = 0.9;  // discount
+    private final double epsilon = 0.1; // exploration
+
     /**
      * Entry point for the program. Creates and starts the bot.
      *
@@ -60,11 +76,6 @@ public class TankBot extends Bot {
 
     @Override
     public void run() {
-        double arenaWidth = getArenaWidth();
-        double arenaHeight = getArenaHeight();
-        double centerX = arenaWidth / 2.0;
-        double centerY = arenaHeight / 2.0;
-
         // Set colors
         setBodyColor(Color.cyan);
         setTurretColor(Color.darkGray);
@@ -72,22 +83,10 @@ public class TankBot extends Bot {
         setBulletColor(Color.orange);
         setScanColor(Color.pink);
 
-        while (isRunning()) {
-            System.out.println("Distance to center: " + getDistance(getX(), getY(), centerX, centerY));
-            // move near the center of the arena if we are too far away
-            if (getDistance(getX(), getY(), centerX, centerY) > Math.min(arenaWidth, arenaHeight) / 2.0) {
-                if (getX() > centerX) {
-                    moveLeft(getX() - centerX);
-                } else {
-                    moveRight(centerX - getX());
-                }
-                if (getY() > centerY) {
-                    moveDown(getY() - centerY);
-                } else {
-                    moveUp(centerY - getY());
-                }
-            }
+        loadQTable();
 
+        while (isRunning()) {
+            turnRadarRight(360); // Continuously scan
             printDebugInfo();
         }
     }
@@ -144,7 +143,16 @@ public class TankBot extends Bot {
      */
     @Override
     public void onScannedBot(ScannedBotEvent e) {
+        opponentDistance = distanceTo(e.getX(), e.getY());
+        String state = getState(opponentDistance);
 
+        updateQ(state);
+
+        int action = selectAction(state);
+        executeAction(action, e);
+
+        lastState = state;
+        lastAction = action;
     }
 
     /**
@@ -155,9 +163,118 @@ public class TankBot extends Bot {
      */
     @Override
     public void onHitByBullet(HitByBulletEvent e) {
-        // Calculate the bearing to the direction of the bullet
+        // Penalize when hit and try to dodge
+        reward -= 2;
         double bearing = calcBearing(e.getBullet().getDirection());
+        turnRight(bearing > 0 ? 90 - bearing : -90 - bearing);
+        forward(50);
+    }
 
+    @Override
+    public void onBulletHit(BulletHitBotEvent e) {
+        // Reward when hitting another bot
+        reward += 3;
+    }
+
+    @Override
+    public void onHitWall(HitWallEvent e) {
+        // Penalize hitting walls
+        reward -= 1;
+        back(20);
+    }
+
+    @Override
+    public void onRoundEnded(RoundEndedEvent e) {
+        saveQTable();
+    }
+
+    private String getState(double distance) {
+        if (distance < 100) {
+            return "CLOSE";
+        } else if (distance < 300) {
+            return "MEDIUM";
+        }
+        return "FAR";
+    }
+
+    private int selectAction(String state) {
+        double[] values = qTable.computeIfAbsent(state, k -> new double[NUM_ACTIONS]);
+        if (Math.random() < epsilon) {
+            return (int) (Math.random() * NUM_ACTIONS);
+        }
+        int best = 0;
+        for (int i = 1; i < values.length; i++) {
+            if (values[i] > values[best]) {
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private void executeAction(int action, ScannedBotEvent e) {
+        switch (action) {
+            case ACTION_FIRE:
+                if (getGunHeat() == 0) {
+                    fire(1);
+                }
+                break;
+            case ACTION_AHEAD:
+                forward(50);
+                break;
+            case ACTION_LEFT:
+                turnLeft(30);
+                break;
+            case ACTION_RIGHT:
+                turnRight(30);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void updateQ(String newState) {
+        if (lastState != null && lastAction >= 0) {
+            double[] qValues = qTable.computeIfAbsent(lastState, k -> new double[NUM_ACTIONS]);
+            double[] next = qTable.computeIfAbsent(newState, k -> new double[NUM_ACTIONS]);
+            double bestNext = next[0];
+            for (int i = 1; i < next.length; i++) {
+                if (next[i] > bestNext) bestNext = next[i];
+            }
+            qValues[lastAction] += alpha * (reward + gamma * bestNext - qValues[lastAction]);
+            reward = 0;
+        }
+    }
+
+    private void loadQTable() {
+        java.io.File file = new java.io.File("qtable.csv");
+        if (!file.exists()) return;
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == NUM_ACTIONS + 1) {
+                    double[] vals = new double[NUM_ACTIONS];
+                    for (int i = 0; i < NUM_ACTIONS; i++) {
+                        vals[i] = Double.parseDouble(parts[i + 1]);
+                    }
+                    qTable.put(parts[0], vals);
+                }
+            }
+        } catch (java.io.IOException ignored) {
+        }
+    }
+
+    private void saveQTable() {
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileWriter("qtable.csv"))) {
+            for (java.util.Map.Entry<String, double[]> entry : qTable.entrySet()) {
+                pw.print(entry.getKey());
+                for (double v : entry.getValue()) {
+                    pw.print("," + v);
+                }
+                pw.println();
+            }
+        } catch (java.io.IOException ignored) {
+        }
     }
 
     /**
