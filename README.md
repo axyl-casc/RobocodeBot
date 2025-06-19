@@ -15,6 +15,10 @@ libraries found in the `lib` folder one level above this project.
 
 This command starts the bot with the compiled classes and included library.
 
+Alternatively run `build.bat` to create a runnable `TankBot.jar`. When executed
+the jar opens a small dialog asking for the server URL and secret before
+connecting.
+
 ### Connecting to the game server
 
 The bot communicates with a Tank Royale game server via WebSocket. Ensure the
