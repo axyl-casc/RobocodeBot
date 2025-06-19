@@ -3,9 +3,12 @@ package infinite.mind;
 import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
 import java.awt.Color;
-import java.util.Random;
 
 
+/**
+ * Example bot demonstrating basic movement and target handling using the
+ * Tank Royale Bot API.
+ */
 public class TankBot extends Bot {
 
     /** Locator used to scan for enemies and handle firing */
@@ -13,19 +16,31 @@ public class TankBot extends Bot {
 
     private double opponentDistance = 0;
 
-    // The main method starts our bot
+    /**
+     * Entry point that launches the bot.
+     *
+     * @param args command line arguments (unused)
+     */
     public static void main(String[] args) {
         new TankBot().start();
     }
 
-    // Constructor, which loads the bot config file
+    /**
+     * Constructs the bot and loads configuration from {@code TankBot.json}.
+     */
     TankBot() {
         super(BotInfo.fromFile("TankBot.json"));
     }
+    /**
+     * Utility method used to calculate the Euclidean distance between two points.
+     */
     private double getDistance(double p1x, double p2x, double p1y, double p2y) {
         return Math.sqrt((p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y));
     }
-    // Called when a new round is started -> initialize and do some movement
+    /**
+     * Called when a new round is started. Initializes colors and repeatedly
+     * searches for opponents while patrolling the arena center.
+     */
     @Override
     public void run() {
         // Move in a square pattern while searching for enemies
@@ -63,7 +78,10 @@ public class TankBot extends Bot {
         }
     }
 
-    // We saw another bot -> fire!
+    /**
+     * Fired when another bot is scanned. Updates targeting and fires based on
+     * distance and certainty.
+     */
     @Override
     public void onScannedBot(ScannedBotEvent e) {
         locator.updateOnScan(e);
@@ -78,7 +96,10 @@ public class TankBot extends Bot {
 
     }
 
-    // We were hit by a bullet -> turn perpendicular to the bullet
+    /**
+     * Called when the bot is hit by a bullet. Turns perpendicular to the
+     * incoming fire and moves ahead to evade further shots.
+     */
     @Override
     public void onHitByBullet(HitByBulletEvent e) {
         // Calculate the bearing to the direction of the bullet
@@ -93,6 +114,9 @@ public class TankBot extends Bot {
         forward(50);
     }
 
+    /**
+     * Moves the bot upward (north). Adjusts orientation before moving.
+     */
     private void moveUp(double distance) { // 90°
         double direction = getDirection();
         if (direction > 90) {
@@ -103,6 +127,9 @@ public class TankBot extends Bot {
         forward(distance);
     }
 
+    /**
+     * Moves the bot left (west). Adjusts orientation before moving.
+     */
     private void moveLeft(double distance) { // 180°
         double direction = getDirection();
 
@@ -115,6 +142,9 @@ public class TankBot extends Bot {
         forward(distance);
     }
 
+    /**
+     * Moves the bot down (south). Adjusts orientation before moving.
+     */
     private void moveDown(double distance) { // 270°
         double direction = getDirection();
         if (direction < 270) {
@@ -126,16 +156,22 @@ public class TankBot extends Bot {
         forward(distance);
     }
 
+    /**
+     * Moves the bot right (east) without adjusting orientation.
+     */
     private void moveRight(double distance) {
         double direction = getDirection();
         // if we want to move right, we want the angle to be set at 0
         turnRight(direction);
         forward(distance);
     }
-    private void printDebugInfo(){
-            System.out.println("Debug Info:");
-            System.out.println("  X: " + getX() + ", Y: " + getY());
-            System.out.println("  Energy: " + getEnergy());
+    /**
+     * Print simple debug information about the bot state.
+     */
+    private void printDebugInfo() {
+        System.out.println("Debug Info:");
+        System.out.println("  X: " + getX() + ", Y: " + getY());
+        System.out.println("  Energy: " + getEnergy());
     }
 
 }
