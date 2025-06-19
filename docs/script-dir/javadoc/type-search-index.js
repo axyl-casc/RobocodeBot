@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"infinite.mind","l":"learning"},{"p":"infinite.mind","l":"TankBot"},{"p":"infinite.mind","l":"TargetLocator"}];updateSearchResults();
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"infinite.mind","l":"learning"},{"p":"infinite.mind","l":"TankBot"},{"p":"infinite.mind","l":"TankBotLauncher"},{"p":"infinite.mind","l":"TargetLocator"}];updateSearchResults();
