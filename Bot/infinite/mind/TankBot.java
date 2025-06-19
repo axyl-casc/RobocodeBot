@@ -6,17 +6,14 @@ import java.awt.Color;
 import java.net.URI;
 import javax.swing.JOptionPane;
 
-
 /**
  * Example bot demonstrating basic movement and target handling using the
  * Tank Royale Bot API.
  */
 public class TankBot extends Bot {
 
-
-
     private static final String DEFAULT_URL = "ws://localhost:7654";
-    private static final String DEFAULT_SECRET = "VizYXf24+eMu2SNGCdiQQ1StNFyWEkmi8qGpYycMR/";
+    private static final String DEFAULT_SECRET = "Zur2Fpt1ExRc5G3WSO/8oM574f/pmEbZ22bqXHlm4/";
 
     /** Locator used to scan for enemies and handle firing */
     private final TargetLocator locator = new TargetLocator();
@@ -36,36 +33,20 @@ public class TankBot extends Bot {
      * Constructs the bot and loads configuration from {@code TankBot.json}.
      */
     TankBot() {
-        this(System.getenv("SERVER_URL") != null ? System.getenv("SERVER_URL") : DEFAULT_URL,
-             System.getenv("SERVER_SECRET") != null ? System.getenv("SERVER_SECRET") : DEFAULT_SECRET);
+        super(BotInfo.fromFile("TankBot.json"), URI.create(DEFAULT_URL), DEFAULT_SECRET);
     }
 
     TankBot(String serverUrl, String serverSecret) {
         super(BotInfo.fromFile("TankBot.json"), URI.create(serverUrl), serverSecret);
     }
 
-    @Override
-    public void onConnected(ConnectedEvent e) {
-        JOptionPane.showMessageDialog(null,
-                "\u2705 Bot joined",
-                "Connection Status",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    @Override
-    public void onConnectionError(ConnectionErrorEvent e) {
-        String msg = e.getError() != null ? e.getError().getMessage() : "Unknown error";
-        JOptionPane.showMessageDialog(null,
-                "\u274C " + msg,
-                "Connection Error",
-                JOptionPane.ERROR_MESSAGE);
-    }
     /**
      * Utility method used to calculate the Euclidean distance between two points.
      */
     private double getDistance(double p1x, double p2x, double p1y, double p2y) {
         return Math.sqrt((p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y));
     }
+
     /**
      * Called when a new round is started. Initializes colors and repeatedly
      * searches for opponents while patrolling the arena center.
@@ -75,7 +56,7 @@ public class TankBot extends Bot {
         // Move in a square pattern while searching for enemies
         double tankXPosition = getX();
         double tankYPosition = getY();
-                double arenaWidth = getArenaWidth();
+        double arenaWidth = getArenaWidth();
         double arenaHeight = getArenaHeight();
         double centerX = arenaWidth / 2.0;
         double centerY = arenaHeight / 2.0;
@@ -115,10 +96,10 @@ public class TankBot extends Bot {
     public void onScannedBot(ScannedBotEvent e) {
         locator.updateOnScan(e);
         opponentDistance = distanceTo(e.getX(), e.getY());
-        if(opponentDistance < 10 && getGunHeat() == 0){
+        if (opponentDistance < 10 && getGunHeat() == 0) {
             fire(3);
-        }else{
-            if(locator.getCertainty() > 5 && getGunHeat() == 0){
+        } else {
+            if (locator.getCertainty() > 5 && getGunHeat() == 0) {
                 fire(Math.min(Math.round(locator.getCertainty() / 10.0) * 3, 3));
             }
         }
@@ -135,7 +116,7 @@ public class TankBot extends Bot {
         double bearing = calcBearing(e.getBullet().getDirection());
 
         // Turn 90 degrees to the bullet direction based on thev bearing
-        turnRight(bearing + 91);
+        setTurnRight(bearing + 91);
 
         // let the locator know we are moving
         locator.turning(bearing + 91);
@@ -194,6 +175,7 @@ public class TankBot extends Bot {
         turnRight(direction);
         forward(distance);
     }
+
     /**
      * Print simple debug information about the bot state.
      */
