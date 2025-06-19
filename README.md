@@ -1,4 +1,4 @@
-# RobocodeBot
+# Infinite Mind Pictures Robocode Bot
 Simple and fun Robocode Bot Demo
 
 ## Building
