@@ -32,3 +32,7 @@ copy Bot\.env.example Bot\.env
 rem edit Bot\.env and adjust SERVER_SECRET if needed
 TankBot.cmd
 ```
+
+## Documentation
+
+Generated API documentation can be found in the `docs` folder. If serving the project with GitHub Pages, navigate to `docs/` to view the Javadoc and additional information. The main entry point is [docs/index.html](docs/index.html).
