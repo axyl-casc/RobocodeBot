@@ -19,17 +19,6 @@ Alternatively run `build.bat` to create a runnable `TankBot.jar`. When executed
 the jar opens a small dialog asking for the server URL and secret before
 connecting.
 
-### Connecting to the game server
-
-The bot communicates with a Tank Royale game server via WebSocket. Ensure the
-`SERVER_URL` and `SERVER_SECRET` environment variables match the server
-configuration. `TankBot.cmd` provides default values of `ws://localhost:7654`
-and `SUMu9ukWcUUteXLidcLHZOFZWg+R2u9VGUb7bVaA3K`, which match the secret from a
-default Tank Royale server configuration.
-
-If the server uses a different secret, either set the environment variable
-directly or create a `.env` file. An example file is provided as `Bot/.env.example`.
-Copy it to `Bot/.env` and edit the values:
 
 ```cmd
 copy Bot\.env.example Bot\.env
