@@ -4,6 +4,7 @@ import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
 import java.awt.Color;
 import java.net.URI;
+import javax.swing.JOptionPane;
 
 
 /**
@@ -41,6 +42,23 @@ public class TankBot extends Bot {
 
     TankBot(String serverUrl, String serverSecret) {
         super(BotInfo.fromFile("TankBot.json"), URI.create(serverUrl), serverSecret);
+    }
+
+    @Override
+    public void onConnected(ConnectedEvent e) {
+        JOptionPane.showMessageDialog(null,
+                "\u2705 Bot joined",
+                "Connection Status",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    public void onConnectionError(ConnectionErrorEvent e) {
+        String msg = e.getError() != null ? e.getError().getMessage() : "Unknown error";
+        JOptionPane.showMessageDialog(null,
+                "\u274C " + msg,
+                "Connection Error",
+                JOptionPane.ERROR_MESSAGE);
     }
     /**
      * Utility method used to calculate the Euclidean distance between two points.
