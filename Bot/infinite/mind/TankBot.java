@@ -3,6 +3,7 @@ package infinite.mind;
 import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
 import java.awt.Color;
+import java.net.URI;
 
 
 /**
@@ -10,6 +11,10 @@ import java.awt.Color;
  * Tank Royale Bot API.
  */
 public class TankBot extends Bot {
+
+
+    private static final URI SERVER_URL = URI.create(System.getenv("SERVER_URL") != null ? System.getenv("SERVER_URL") : "ws://localhost:7654");
+    private static final String SERVER_SECRET = System.getenv("SERVER_SECRET") != null ? System.getenv("SERVER_SECRET") : "VizYXf24+eMu2SNGCdiQQ1StNFyWEkmi8qGpYycMR/";
 
     /** Locator used to scan for enemies and handle firing */
     private final TargetLocator locator = new TargetLocator();
@@ -29,7 +34,7 @@ public class TankBot extends Bot {
      * Constructs the bot and loads configuration from {@code TankBot.json}.
      */
     TankBot() {
-        super(BotInfo.fromFile("TankBot.json"));
+        super(BotInfo.fromFile("TankBot.json"), SERVER_URL, SERVER_SECRET);
     }
     /**
      * Utility method used to calculate the Euclidean distance between two points.
