@@ -13,8 +13,9 @@ import java.net.URI;
 public class TankBot extends Bot {
 
 
-    private static final URI SERVER_URL = URI.create(System.getenv("SERVER_URL") != null ? System.getenv("SERVER_URL") : "ws://localhost:7654");
-    private static final String SERVER_SECRET = System.getenv("SERVER_SECRET") != null ? System.getenv("SERVER_SECRET") : "VizYXf24+eMu2SNGCdiQQ1StNFyWEkmi8qGpYycMR/";
+
+    private static final String DEFAULT_URL = "ws://localhost:7654";
+    private static final String DEFAULT_SECRET = "VizYXf24+eMu2SNGCdiQQ1StNFyWEkmi8qGpYycMR/";
 
     /** Locator used to scan for enemies and handle firing */
     private final TargetLocator locator = new TargetLocator();
@@ -34,7 +35,12 @@ public class TankBot extends Bot {
      * Constructs the bot and loads configuration from {@code TankBot.json}.
      */
     TankBot() {
-        super(BotInfo.fromFile("TankBot.json"), SERVER_URL, SERVER_SECRET);
+        this(System.getenv("SERVER_URL") != null ? System.getenv("SERVER_URL") : DEFAULT_URL,
+             System.getenv("SERVER_SECRET") != null ? System.getenv("SERVER_SECRET") : DEFAULT_SECRET);
+    }
+
+    TankBot(String serverUrl, String serverSecret) {
+        super(BotInfo.fromFile("TankBot.json"), URI.create(serverUrl), serverSecret);
     }
     /**
      * Utility method used to calculate the Euclidean distance between two points.
