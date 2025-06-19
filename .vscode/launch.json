@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Run TankBot via batch files",
-      "type": "cppvsdbg",
+      "type": "java",
       "request": "launch",
       "program": "${workspaceFolder}/Bot/TankBot.cmd",
       "args": [],

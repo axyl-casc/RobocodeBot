@@ -105,7 +105,7 @@ public class TankBot extends Bot {
         // Calculate the bearing to the direction of the bullet
         double bearing = calcBearing(e.getBullet().getDirection());
 
-        // Turn 90 degrees to the bullet direction based on the bearing
+        // Turn 90 degrees to the bullet direction based on thev bearing
         turnRight(bearing + 91);
 
         // let the locator know we are moving
