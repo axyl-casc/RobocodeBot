@@ -2,7 +2,7 @@ package infinite.mind;
 
 import dev.robocode.tankroyale.botapi.*;
 import dev.robocode.tankroyale.botapi.events.*;
-import java.awt.Color;
+import dev.robocode.tankroyale.botapi.graphics.Color;
 import java.net.URI;
 import javax.swing.JOptionPane;
 
@@ -62,12 +62,12 @@ public class TankBot extends Bot {
         double centerY = arenaHeight / 2.0;
         System.out.println("TankBot started at position: (" + tankXPosition + ", " + tankYPosition + ")");
 
-        // https://docs.oracle.com/javase/8/docs/api/java/awt/Color.html
-        setBodyColor(Color.cyan);
-        setTurretColor(Color.darkGray);
-        setRadarColor(Color.green);
-        setBulletColor(Color.orange);
-        setScanColor(Color.pink);
+        // https://robocode-dev.github.io/tank-royale/api/java/dev/robocode/tankroyale/botapi/graphics/Color.html
+        setBodyColor(Color.ORANGE_RED);
+        setTurretColor(Color.GAINSBORO);
+        setRadarColor(Color.GREEN_YELLOW);
+        setBulletColor(Color.AQUA);
+        setScanColor(Color.PINK);
 
         while (isRunning()) {
 
@@ -100,7 +100,11 @@ public class TankBot extends Bot {
             fire(3);
         } else {
             if (locator.getCertainty() > 5 && getGunHeat() == 0) {
-                fire(Math.min(Math.round(locator.getCertainty() / 10.0) * 3, 3));
+                if(opponentDistance < 100){
+                    fire(1);
+                }else{
+                    fire(Math.min(Math.round(locator.getCertainty() / 10.0) * 3, 3));
+                }
             }
         }
 
