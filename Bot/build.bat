@@ -12,7 +12,7 @@ if %ERRORLEVEL% neq 0 (
 rem Create manifest with main class and classpath to the API jar
 set MANIFEST=manifest.txt
 echo Main-Class: infinite.mind.TankBotLauncher> %MANIFEST%
-echo Class-Path: lib/robocode-tankroyale-bot-api-0.30.2.jar>> %MANIFEST%
+echo Class-Path: lib/robocode-tankroyale-bot-api-0.31.0.jar>> %MANIFEST%
 
 jar cfm TankBot.jar %MANIFEST% infinite\mind\*.class TankBot.json
 if %ERRORLEVEL% neq 0 (
