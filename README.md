@@ -23,8 +23,6 @@ compile.bat
 Start the bot with the compiled classes and included library:
 
 ```cmd
-copy Bot\.env.example Bot\.env
-rem ✏️ Edit Bot\.env and adjust SERVER_SECRET if needed
 TankBot.cmd
 ```
 
