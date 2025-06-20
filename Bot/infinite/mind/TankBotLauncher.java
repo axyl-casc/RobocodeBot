@@ -17,6 +17,14 @@ public class TankBotLauncher {
             secret = "";
         }
         TankBot bot = new TankBot(url, secret);
-        bot.start();
+        try {
+            bot.start();
+            JOptionPane.showMessageDialog(null, "Bot finished running.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    "Failed to run bot: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
 }
