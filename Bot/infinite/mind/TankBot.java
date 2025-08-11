@@ -107,7 +107,6 @@ public class TankBot extends Bot {
                 }
             }
         }
-
     }
 
     /**
